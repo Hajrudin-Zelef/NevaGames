@@ -20,11 +20,14 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Préparer le jeu et l'icône
+      - name: Préparer le launcher, les jeux et l'icône
         run: |
-          mkdir -p www assets
-          cp blackjack.html www/index.html
+          mkdir -p www/games www/shared assets
+          cp index.html www/
+          cp games/*.html www/games/
+          cp shared/*.js www/shared/
           cp icon.png assets/icon-only.png
+          echo "www/ prêt :"; find www -type f | sort
 
       - name: Installer les dépendances
         run: npm install

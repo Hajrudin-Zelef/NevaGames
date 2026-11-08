@@ -1,6 +1,6 @@
 {
-  "appId": "com.blackjack.casino",
-  "appName": "Blackjack",
+  "appId": "pro.nevaci.games",
+  "appName": "NevaGames",
   "webDir": "www",
-  "backgroundColor": "#070a09"
+  "backgroundColor": "#081527"
 }

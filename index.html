@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>NevaGames</title>
+<meta name="description" content="NevaGames — tous vos jeux au même endroit : Blackjack, Dames et les prochains titres." />
+<meta name="theme-color" content="#081527" />
+<style>
+  :root {
+    --navy: #0b1f3a;
+    --muted: #5b6b82;
+    --line: #e4e9f2;
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --accent: #1d6ff2;
+    --accent-2: #4cc2ff;
+    --accent-soft: #eaf2ff;
+    --ok: #0f7b46;
+    --ok-soft: #d9f5e6;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow-sm: 0 1px 2px rgba(13,27,46,.06), 0 8px 24px -16px rgba(13,27,46,.25);
+    --shadow-md: 0 2px 6px rgba(13,27,46,.06), 0 24px 48px -28px rgba(13,27,46,.35);
+    --font: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --navy: #eaf2fb;
+      --muted: #9ab0c9;
+      --line: #22344f;
+      --bg: #081527;
+      --surface: #0d1f36;
+      --accent: #59a6ff;
+      --accent-2: #6fd2ff;
+      --accent-soft: #12294a;
+      --ok: #4ad38a;
+      --ok-soft: #103a26;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.7);
+      --shadow-md: 0 2px 6px rgba(0,0,0,.35), 0 24px 48px -28px rgba(0,0,0,.8);
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: var(--font);
+    color: var(--navy);
+    background:
+      linear-gradient(to right, rgba(127,160,200,.07) 1px, transparent 1px) 0 0 / 44px 44px,
+      linear-gradient(to bottom, rgba(127,160,200,.07) 1px, transparent 1px) 0 0 / 44px 44px,
+      var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  h1, h2, h3 { color: var(--navy); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 .5em; }
+  h1 { font-size: clamp(2.1rem, 8vw, 3.4rem); font-weight: 780; }
+  h2 { font-size: clamp(1.5rem, 5vw, 2.2rem); font-weight: 720; }
+  h3 { font-size: 1.08rem; font-weight: 660; }
+  p { margin: 0 0 1rem; }
+  button { font: inherit; color: inherit; }
+
+  #app { min-height: 100%; display: flex; flex-direction: column; }
+
+  /* ---------- Barre haute ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-in {
+    width: min(100% - 32px, 940px); margin-inline: auto;
+    height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--navy); cursor: pointer; background: none; border: 0; padding: 0; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 10px; flex: 0 0 auto;
+    display: grid; place-items: center; font-size: 17px;
+    background: linear-gradient(150deg, var(--accent), var(--accent-2));
+    box-shadow: 0 6px 16px -8px var(--accent);
+  }
+  .brand-text { font-weight: 760; letter-spacing: .05em; font-size: .95rem; }
+  .brand-text small { display: block; font-size: .58rem; font-weight: 650; letter-spacing: .24em; color: var(--muted); text-transform: uppercase; margin-top: 1px; }
+  .nav { display: flex; gap: 4px; }
+  .nav button {
+    background: none; border: 0; cursor: pointer;
+    padding: 8px 13px; border-radius: 9px;
+    font-size: .86rem; font-weight: 600; color: var(--muted);
+    transition: background .15s, color .15s;
+  }
+  .nav button:hover { background: var(--accent-soft); color: var(--navy); }
+  .nav button.is-active { color: var(--accent); background: var(--accent-soft); }
+  @media (max-width: 560px) {
+    .brand-text small { display: none; }
+    .nav button { padding: 8px 9px; font-size: .8rem; }
+  }
+
+  /* ---------- Écrans ---------- */
+  .screen { display: none; width: min(100% - 32px, 940px); margin-inline: auto; padding: clamp(28px, 6vw, 56px) 0 64px; }
+  .screen.is-on { display: block; animation: screenIn .35s ease both; }
+  @keyframes screenIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .eyebrow { display: inline-block; font-size: .76rem; font-weight: 720; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .lead { font-size: clamp(1rem, 2.4vw, 1.12rem); color: var(--muted); max-width: 54ch; }
+  .section-head { max-width: 640px; margin-bottom: clamp(24px, 5vw, 40px); }
+
+  /* ---------- Accueil ---------- */
+  #screen-home { display: none; place-items: center; text-align: center; min-height: calc(100dvh - 62px); }
+  #screen-home.is-on { display: grid; }
+  body.no-topbar #screen-home { min-height: 100dvh; }
+  body.no-topbar #screen-play { height: 100dvh; }
+  #screen-home h1 {
+    background: linear-gradient(100deg, var(--navy) 25%, var(--accent) 50%, var(--navy) 75%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shimmer 6s linear infinite;
+    margin-bottom: .35em;
+  }
+  @keyframes shimmer { to { background-position: -220% 0; } }
+  .home-sub { color: var(--muted); font-size: 1.02rem; max-width: 30ch; margin-inline: auto; }
+  .home-stats {
+    margin-top: 26px; font-size: .86rem; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: center;
+  }
+  .home-stats b { color: var(--navy); font-variant-numeric: tabular-nums; }
+  .home-actions { margin-top: 30px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* ---------- Boutons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+    padding: 13px 22px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--navy);
+    font-size: .95rem; font-weight: 640; cursor: pointer; text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    transition: transform .15s, box-shadow .15s, background .15s, border-color .15s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); text-decoration: none; }
+  .btn:active { transform: translateY(0); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .btn-primary {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+    box-shadow: 0 14px 28px -16px var(--accent);
+  }
+  .btn-primary:hover { background: #1760d6; border-color: #1760d6; }
+  .btn-ghost { background: transparent; box-shadow: none; }
+  .btn-sm { padding: 9px 15px; font-size: .86rem; border-radius: 10px; }
+  .btn-danger { color: #d1242f; border-color: color-mix(in srgb, #d1242f 35%, var(--line)); }
+  .btn:disabled { opacity: .5; cursor: default; transform: none; }
+
+  /* ---------- Cartes de jeu ---------- */
+  .games { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+  .game-card {
+    position: relative; display: flex; flex-direction: column; gap: 10px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px; text-align: left; cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: transform .18s, box-shadow .18s, border-color .18s;
+    animation: screenIn .4s ease both;
+  }
+  .game-card:nth-child(2) { animation-delay: .06s; }
+  .game-card:nth-child(3) { animation-delay: .12s; }
+  .game-card:nth-child(4) { animation-delay: .18s; }
+  .game-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--accent); }
+  .game-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .game-card.soon { cursor: default; opacity: .66; }
+  .game-card.soon:hover { transform: none; border-color: var(--line); box-shadow: var(--shadow-sm); }
+  .game-ico {
+    width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center;
+    font-size: 26px; background: var(--accent-soft); margin-bottom: 4px;
+  }
+  .game-card p { color: var(--muted); font-size: .92rem; margin: 0; flex: 1; }
+  .game-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
+  .badge {
+    font-size: .66rem; font-weight: 760; letter-spacing: .1em; text-transform: uppercase;
+    padding: 5px 9px; border-radius: 999px; background: var(--ok-soft); color: var(--ok);
+  }
+  .badge.soon { background: var(--accent-soft); color: var(--muted); }
+  .play-link { font-size: .88rem; font-weight: 660; color: var(--accent); display: inline-flex; gap: 6px; align-items: center; }
+  .play-link span { transition: transform .18s; }
+  .game-card:hover .play-link span { transform: translateX(4px); }
+  .game-rec { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Records ---------- */
+  .rec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; }
+  .rec-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow-sm); }
+  .rec-card h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .rec-card h3 .game-ico { width: 36px; height: 36px; font-size: 18px; border-radius: 10px; margin: 0; }
+  .rec-list { list-style: none; margin: 0; padding: 0; }
+  .rec-list li {
+    display: flex; justify-content: space-between; gap: 14px; align-items: baseline;
+    padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: .92rem;
+  }
+  .rec-list li:last-child { border-bottom: 0; }
+  .rec-list .k { color: var(--muted); }
+  .rec-list .v { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--navy); }
+  .rec-empty { color: var(--muted); font-size: .88rem; font-style: italic; margin: 0; }
+  .rec-actions { margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ---------- Options ---------- */
+  .opt-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 24px; box-shadow: var(--shadow-sm); max-width: 640px; }
+  .opt-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 18px;
+    padding: 17px 0; border-bottom: 1px solid var(--line);
+  }
+  .opt-row:last-child { border-bottom: 0; }
+  .opt-row .lbl { font-weight: 640; font-size: .95rem; }
+  .opt-row .hint { display: block; font-weight: 400; font-size: .82rem; color: var(--muted); margin-top: 2px; }
+  .seg { display: inline-flex; background: var(--accent-soft); border-radius: 10px; padding: 3px; gap: 3px; }
+  .seg button {
+    border: 0; background: none; cursor: pointer; padding: 8px 13px; border-radius: 8px;
+    font-size: .82rem; font-weight: 640; color: var(--muted);
+  }
+  .seg button.is-on { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm); }
+  .switch {
+    position: relative; width: 52px; height: 30px; border-radius: 999px; border: 0; cursor: pointer;
+    background: color-mix(in srgb, var(--muted) 35%, transparent); transition: background .2s; flex: 0 0 auto;
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
+    border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 2px 5px rgba(0,0,0,.28);
+  }
+  .switch[aria-pressed="true"] { background: var(--accent); }
+  .switch[aria-pressed="true"]::after { transform: translateX(22px); }
+  .opt-foot { margin-top: 22px; font-size: .82rem; color: var(--muted); max-width: 640px; }
+
+  /* ---------- Écran de jeu ---------- */
+  #screen-play { width: 100%; max-width: none; padding: 0; height: calc(100dvh - 62px); display: none; }
+  #screen-play.is-on { display: flex; flex-direction: column; }
+  .play-bar {
+    display: flex; align-items: center; gap: 12px;
+    width: min(100% - 20px, 940px); margin-inline: auto; padding: 10px 0;
+  }
+  .play-bar .title { font-weight: 700; font-size: .95rem; letter-spacing: .02em; }
+  #gameFrame {
+    flex: 1; width: 100%; border: 0; background: #050b12;
+    display: block; min-height: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  /* ---------- Divers ---------- */
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+    background: var(--navy); color: var(--bg); padding: 11px 18px; border-radius: 999px;
+    font-size: .86rem; font-weight: 600; opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s; z-index: 60; box-shadow: var(--shadow-md);
+  }
+  .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar" id="topbar" hidden>
+    <div class="topbar-in">
+      <button class="brand" id="brandBtn" type="button" aria-label="Accueil NevaGames">
+        <span class="brand-mark" aria-hidden="true">🎮</span>
+        <span class="brand-text">NEVAGAMES<small>Arcade</small></span>
+      </button>
+      <nav class="nav" aria-label="Navigation">
+        <button type="button" data-go="menu">Jeux</button>
+        <button type="button" data-go="records">Records</button>
+        <button type="button" data-go="options">Options</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ACCUEIL -->
+    <section class="screen" id="screen-home" aria-label="Accueil">
+      <div>
+        <p class="eyebrow">Tous vos jeux, au même endroit</p>
+        <h1>NEVAGAMES</h1>
+        <p class="home-sub">Blackjack, Dames et les prochains titres — directement dans l'application.</p>
+        <div class="home-stats" id="homeStats"></div>
+        <div class="home-actions">
+          <button class="btn btn-primary" type="button" data-go="menu">▶&nbsp; Commencer</button>
+          <button class="btn btn-ghost" type="button" data-go="records">Voir les records</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MENU -->
+    <section class="screen" id="screen-menu" aria-label="Jeux">
+      <div class="section-head">
+        <p class="eyebrow">Sélection</p>
+        <h2>Choisissez un jeu</h2>
+        <p class="lead">Un nouveau titre s'ajoutera ici au fil des mises à jour.</p>
+      </div>
+      <div class="games" id="gamesGrid"></div>
+    </section>
+
+    <!-- RECORDS -->
+    <section class="screen" id="screen-records" aria-label="Records">
+      <div class="section-head">
+        <p class="eyebrow">Statistiques</p>
+        <h2>Vos records</h2>
+        <p class="lead">Conservés sur cet appareil, partie après partie.</p>
+      </div>
+      <div class="rec-grid" id="recGrid"></div>
+      <div class="rec-actions">
+        <button class="btn btn-danger btn-sm" type="button" id="resetRecords">Effacer tous les records</button>
+      </div>
+    </section>
+
+    <!-- OPTIONS -->
+    <section class="screen" id="screen-options" aria-label="Options">
+      <div class="section-head">
+        <p class="eyebrow">Réglages</p>
+        <h2>Options</h2>
+      </div>
+      <div class="opt-card">
+        <div class="opt-row">
+          <span class="lbl">Son<span class="hint">Effets sonores des jeux</span></span>
+          <button class="switch" type="button" id="optSound" aria-pressed="true" aria-label="Activer ou couper le son"></button>
+        </div>
+        <div class="opt-row">
+          <span class="lbl">Difficulté des Dames<span class="hint">Profondeur de recherche de l'IA</span></span>
+          <span class="seg" id="optLevel" role="group" aria-label="Difficulté">
+            <button type="button" data-level="2">Facile</button>
+            <button type="button" data-level="4">Moyen</button>
+            <button type="button" data-level="6">Difficile</button>
+          </span>
+        </div>
+        <div class="opt-row">
+          <span class="lbl">Solde du Blackjack<span class="hint">Remet la bankroll à 1 000 €</span></span>
+          <button class="btn btn-sm" type="button" id="resetBank">Réinitialiser</button>
+        </div>
+        <div class="opt-row">
+          <span class="lbl">Records<span class="hint">Toutes les statistiques de tous les jeux</span></span>
+          <button class="btn btn-danger btn-sm" type="button" id="resetAll">Effacer</button>
+        </div>
+      </div>
+      <p class="opt-foot" id="optFoot">NevaGames · v<span id="ver">1.1.0</span> — les réglages et records sont enregistrés localement sur cet appareil.</p>
+    </section>
+
+    <!-- JEU -->
+    <section class="screen" id="screen-play" aria-label="En jeu">
+      <div class="play-bar">
+        <button class="btn btn-sm" type="button" id="backBtn">←&nbsp; Menu</button>
+        <span class="title" id="playTitle"></span>
+      </div>
+      <iframe id="gameFrame" title="Jeu" src="about:blank" allow="autoplay"></iframe>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="shared/ng.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* =========================================================
+     REGISTRE DES JEUX
+     Ajouter un jeu = déposer games/monjeu.html + 1 entrée ici.
+     ========================================================= */
+  var GAMES = [
+    {
+      id: "blackjack",
+      file: "games/blackjack.html",
+      title: "Blackjack",
+      icon: "🃏",
+      desc: "6 sabots, blackjack à 3:2, croupier à 16. Doubler, splitter, assurance.",
+      highlight: "soldeMax",
+      stats: [
+        { k: "soldeMax", label: "Solde maximum", fmt: "eur" },
+        { k: "plusGrosGain", label: "Plus gros gain", fmt: "eur" },
+        { k: "mains", label: "Mains jouées", fmt: "int" },
+        { k: "blackjacks", label: "Blackjacks naturels", fmt: "int" }
+      ],
+      status: "ready"
+    },
+    {
+      id: "dames",
+      file: "games/dames.html",
+      title: "Dames",
+      icon: "⚪",
+      desc: "8×8, prise obligatoire, rafle majoritaire, dames volantes. IA de 3 niveaux.",
+      highlight: "meilleureSerie",
+      stats: [
+        { k: "victoires", label: "Victoires", fmt: "int" },
+        { k: "defaites", label: "Défaites", fmt: "int" },
+        { k: "nuls", label: "Matchs nuls", fmt: "int" },
+        { k: "meilleureSerie", label: "Meilleure série", fmt: "int" }
+      ],
+      status: "ready"
+    },
+    { id: "prochain", status: "soon", title: "Prochain jeu", icon: "🔒", desc: "Un nouveau titre arrive ici." }
+  ];
+
+  var VERSION = "1.1.0";
+
+  /* ---------- utilitaires ---------- */
+  var $ = function (s) { return document.querySelector(s); };
+
+  function fmtStat(v, fmt) {
+    if (v === undefined || v === null || v === "") return null;
+    if (typeof v !== "number") return String(v);
+    if (fmt === "eur") return v.toLocaleString("fr-FR") + " €";
+    return v.toLocaleString("fr-FR");
+  }
+
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("on"); }, 2200);
+  }
+
+  function readyGames() {
+    return GAMES.filter(function (g) { return g.status === "ready"; });
+  }
+
+  function byId(id) {
+    for (var i = 0; i < GAMES.length; i++) if (GAMES[i].id === id) return GAMES[i];
+    return null;
+  }
+
+  /* =========================================================
+     RENDU
+     ========================================================= */
+  function renderHome() {
+    var parts = [];
+    readyGames().forEach(function (g) {
+      if (!g.highlight) return;
+      var def = null;
+      g.stats.forEach(function (s) { if (s.k === g.highlight) def = s; });
+      if (!def) return;
+      var val = fmtStat(NG.get(g.id)[def.k], def.fmt);
+      if (val) parts.push("<span>" + g.title + " · " + def.label + " <b>" + val + "</b></span>");
+    });
+    $("#homeStats").innerHTML = parts.length
+      ? parts.join("")
+      : "<span>Aucun record pour l'instant — lancez une partie !</span>";
+  }
+
+  function renderMenu() {
+    var html = "";
+    GAMES.forEach(function (g) {
+      if (g.status === "ready") {
+        var badge = "";
+        if (g.highlight) {
+          var def = null;
+          g.stats.forEach(function (s) { if (s.k === g.highlight) def = s; });
+          var val = def ? fmtStat(NG.get(g.id)[def.k], def.fmt) : null;
+          if (val) badge = '<span class="game-rec">' + def.label + " · " + val + "</span>";
+        }
+        html +=
+          '<button class="game-card" type="button" data-game="' + g.id + '">' +
+            '<span class="game-ico" aria-hidden="true">' + g.icon + "</span>" +
+            "<h3>" + g.title + "</h3>" +
+            "<p>" + g.desc + "</p>" +
+            '<span class="game-meta"><span class="badge">Disponible</span>' +
+            '<span class="play-link">Jouer <span aria-hidden="true">→</span></span></span>' +
+            (badge ? '<span class="game-meta">' + badge + "</span>" : "") +
+          "</button>";
+      } else {
+        html +=
+          '<div class="game-card soon" aria-disabled="true">' +
+            '<span class="game-ico" aria-hidden="true">' + (g.icon || "🔒") + "</span>" +
+            "<h3>" + (g.title || "À venir") + "</h3>" +
+            "<p>" + (g.desc || "Bientôt disponible.") + "</p>" +
+            '<span class="game-meta"><span class="badge soon">Bientôt</span></span>' +
+          "</div>";
+      }
+    });
+    $("#gamesGrid").innerHTML = html;
+  }
+
+  function renderRecords() {
+    var html = "";
+    readyGames().forEach(function (g) {
+      var rec = NG.get(g.id);
+      var rows = "";
+      var any = false;
+      g.stats.forEach(function (s) {
+        var val = fmtStat(rec[s.k], s.fmt);
+        if (val !== null) any = true;
+        rows += '<li><span class="k">' + s.label + '</span><span class="v">' + (val || "—") + "</span></li>";
+      });
+      html +=
+        '<div class="rec-card"><h3><span class="game-ico" aria-hidden="true">' + g.icon + "</span>" + g.title + "</h3>" +
+        (any ? '<ul class="rec-list">' + rows + "</ul>" : '<p class="rec-empty">Aucun record pour l\'instant.</p>') +
+        "</div>";
+    });
+    $("#recGrid").innerHTML = html;
+  }
+
+  function renderOptions() {
+    var s = NG.settings();
+    $("#optSound").setAttribute("aria-pressed", String(s.sound !== false));
+    Array.prototype.forEach.call($("#optLevel").children, function (b) {
+      b.classList.toggle("is-on", b.getAttribute("data-level") === String(s.level));
+    });
+  }
+
+  function renderAll() {
+    renderHome();
+    renderMenu();
+    renderRecords();
+    renderOptions();
+  }
+
+  /* =========================================================
+     NAVIGATION
+     ========================================================= */
+  var current = "home";
+  var currentGame = null;
+  /* Pile de navigation interne.
+     On n'utilise PAS history.pushState : les navigations de l'iframe
+     s'insèrent dans l'historique commun et(history.back) remonterait
+     au mauvais endroit. */
+  var stack = ["home"];
+
+  function show(name, push) {
+    var el = document.getElementById("screen-" + name);
+    if (!el) return;
+    current = name;
+    Array.prototype.forEach.call(document.querySelectorAll(".screen"), function (s) {
+      s.classList.toggle("is-on", s === el);
+    });
+
+    var inGame = name === "play";
+    var hideBar = (name === "home") || inGame;
+    $("#topbar").hidden = hideBar;
+    document.body.classList.toggle("no-topbar", hideBar);
+    Array.prototype.forEach.call(document.querySelectorAll(".nav button"), function (b) {
+      b.classList.toggle("is-active", b.getAttribute("data-go") === name);
+    });
+
+    if (name === "records") renderRecords();
+    if (name === "menu") renderMenu();
+    if (name === "home") renderHome();
+    if (name === "options") renderOptions();
+
+    if (!inGame) stopGame();
+
+    if (push !== false && stack[stack.length - 1] !== name) stack.push(name);
+    window.scrollTo(0, 0);
+  }
+
+  function stopGame() {
+    var f = $("#gameFrame");
+    if (f.getAttribute("src") !== "about:blank") f.setAttribute("src", "about:blank");
+    currentGame = null;
+  }
+
+  function openGame(id) {
+    var g = byId(id);
+    if (!g || g.status !== "ready") return;
+    currentGame = id;
+    $("#playTitle").textContent = g.title;
+    $("#gameFrame").setAttribute("src", g.file);
+    show("play");
+    renderAll(); // au retour, les records seront à jour
+  }
+
+  /* ---------- retours ---------- */
+  function goBack() {
+    if (current === "home") { exitApp(); return; }
+    if (stack.length > 1) {
+      stack.pop();
+      show(stack[stack.length - 1], false);
+      return;
+    }
+    show("home", false);
+  }
+
+  function exitApp() {
+    var App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    if (App && App.exitApp) { try { App.exitApp(); return; } catch (e) {} }
+    show("home");
+  }
+
+  /* un jeu demande à revenir au menu */
+  window.addEventListener("message", function (e) {
+    if (e.data && e.data.ng === "back") goBack();
+  });
+
+  /* ---------- boutons du launcher ---------- */
+  document.addEventListener("click", function (e) {
+    var goEl = e.target.closest("[data-go]");
+    if (goEl) { show(goEl.getAttribute("data-go")); return; }
+    var card = e.target.closest("[data-game]");
+    if (card) { openGame(card.getAttribute("data-game")); return; }
+  });
+
+  $("#brandBtn").addEventListener("click", function () { stack = ["home"]; show("home", false); });
+  $("#backBtn").addEventListener("click", function () { goBack(); });
+
+  /* =========================================================
+     OPTIONS
+     ========================================================= */
+  $("#optSound").addEventListener("click", function () {
+    var s = NG.settings();
+    var next = !(s.sound !== false);
+    NG.setSetting("sound", next);
+    renderOptions();
+    toast(next ? "Son activé" : "Son coupé");
+  });
+
+  $("#optLevel").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-level]");
+    if (!b) return;
+    NG.setSetting("level", b.getAttribute("data-level"));
+    renderOptions();
+    toast("Difficulté : " + b.textContent);
+  });
+
+  function armConfirm(btn, label, run) {
+    var armed = false, timer = null;
+    btn.addEventListener("click", function () {
+      if (!armed) {
+        armed = true;
+        var old = btn.textContent;
+        btn.textContent = "Confirmer ?";
+        timer = setTimeout(function () { armed = false; btn.textContent = old; }, 3000);
+        return;
+      }
+      clearTimeout(timer); armed = false;
+      run();
+    });
+  }
+
+  armConfirm($("#resetBank"), "Réinitialiser", function () {
+    try { localStorage.setItem("bj-blackjack-v1", JSON.stringify({ balance: 1000 })); } catch (e) {}
+    toast("Solde remis à 1 000 €");
+  });
+
+  function wipeRecords() {
+    NG.reset();
+    renderAll();
+    toast("Records effacés");
+  }
+  armConfirm($("#resetRecords"), "Effacer", wipeRecords);
+  armConfirm($("#resetAll"), "Effacer", wipeRecords);
+
+  /* =========================================================
+     RETOUR MATÉRIEL ANDROID
+     ========================================================= */
+  try {
+    var App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    if (App && App.addListener) {
+      App.addListener("backbutton", function () { goBack(); });
+    }
+  } catch (e) {}
+
+  /* ---------- démarrage ---------- */
+  $("#ver").textContent = VERSION;
+  renderAll();
+  var start = (location.hash || "").replace("#", "");
+  if (start === "play" || !document.getElementById("screen-" + start)) start = "home";
+  stack = [start];
+  show(start, false);
+})();
+</script>
+</body>
+</html>

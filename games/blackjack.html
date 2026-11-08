@@ -293,6 +293,8 @@
   </div>
 </div>
 
+<script src="../shared/ng.js"></script>
+<script>window.NG=window.NG||{bump:function(){},max:function(){},set:function(){},get:function(){return{}},settings:function(){return{sound:true,level:"4"}},setSetting:function(){}};</script>
 <script>
 // ================== MOTEUR (règles, inchangé) ==================
 const SUITS = ['♠','♥','♦','♣'];
@@ -310,6 +312,14 @@ try{
   if(saved && typeof saved.balance==='number' && saved.balance>=0) balance = Math.min(saved.balance, 999999);
 }catch(e){}
 function save(){ try{ const safe = phase==='betting' ? balance+bet : balance; localStorage.setItem('bj-blackjack-v1', JSON.stringify({balance:safe})); }catch(e){} }
+// NevaGames : comptabilise la main dans les records partagés
+function ngHand(net){
+  try{
+    NG.bump('blackjack','mains',1);
+    if(net>0) NG.max('blackjack','plusGrosGain',net);
+    NG.max('blackjack','soldeMax',balance);
+  }catch(e){}
+}
 
 function buildShoe(){
   shoe = [];
@@ -693,17 +703,20 @@ function settle(){
   if(net>0){ sfx.win(); confetti(70); coinBurst(18); tableFlash('gold'); setDelta(`+${fmt(net)} €`,'win'); say(`<b>Gagné !</b> ${msgs.join(' · ')}`,'jackpot'); }
   else if(net<0){ sfx.lose(); tableFlash('red'); setDelta(`${fmt(net)} €`,'lose'); say(`<b>Perdu.</b> ${msgs.join(' · ')}`,'lose'); }
   else { sfx.push(); setDelta('±0 €','push'); say(`<b>Égalité.</b> Mise rendue.`); }
+  ngHand(net);
   bet=0; splitBet=0; endRound();
 }
 function finishBust(v){
   phase='done'; renderHands(true);
   sfx.lose(); tableFlash('red'); setDelta(`-${fmt(bet+splitBet+insuranceBet)} €`,'lose');
   say(`<b>Brûlé à ${v}.</b> Le croupier ramasse.`, 'lose');
+  ngHand(-(bet+splitBet+insuranceBet));
   bet=0; splitBet=0; endRound();
 }
 function finishPush(msg){
   phase='done'; renderHands(true);
   balance+=bet; save(); sfx.push(); setDelta('±0 €','push'); say(`<b>${msg}</b>`);
+  ngHand(0);
   bet=0;
 }
 function finishBlackjack(){
@@ -714,6 +727,8 @@ function finishBlackjack(){
   if(playerHand.lastChild) playerHand.lastChild.classList.add('bj');
   setDelta(`+${fmt(win-bet)} €`,'win');
   say(`<b>BLACKJACK !</b> Paie 3:2 — +${fmt(win-bet)} €.`,'jackpot');
+  ngHand(win-bet);
+  try{ NG.bump('blackjack','blackjacks',1); }catch(e){}
   bet=0;
 }
 $('again').addEventListener('click',()=>{ if(phase!=='play'&&phase!=='dealer'&&bet===0&&balance<5){ balance=1000; lastBet=0; } hideOverlay(); resetTable(); save(); say('Solde : <b>'+fmt(balance)+' €</b> — placez votre mise.'); });
@@ -732,6 +747,7 @@ document.addEventListener('keydown',e=>{
   if(b && !b.disabled && !$('overlay').classList.contains('show')) b.click();
 });
 // ================== INIT ==================
+try{ if(NG.settings().sound===false){ soundOn=false; $('sound').textContent='🔇'; $('sound').title='Son coupé'; } }catch(e){}
 buildShoe();
 resetTable();
 checkBroke();
