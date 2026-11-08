@@ -35,6 +35,17 @@ jobs:
       - name: Générer les icônes
         run: npx --yes @capacitor/assets generate --android --iconBackgroundColor '#0f3d2a' --iconBackgroundColorDark '#0f3d2a'
 
+      - name: Vérifier l'icône adaptative
+        run: |
+          set -e
+          FG=android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+          BG=android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png
+          XML=android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          test -f "$FG" || { echo "ERREUR: ic_launcher_foreground.png non généré"; exit 1; }
+          test -f "$BG" || { echo "ERREUR: ic_launcher_background.png non généré"; exit 1; }
+          grep -q "ic_launcher_background" "$XML" || { echo "ERREUR: XML adaptatif non mis à jour"; exit 1; }
+          echo "Icône adaptative OK"
+
       - name: Synchroniser le jeu
         run: npx cap sync android
 
