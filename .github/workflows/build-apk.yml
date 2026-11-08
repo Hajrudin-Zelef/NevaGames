@@ -20,16 +20,20 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Préparer le jeu
+      - name: Préparer le jeu et l'icône
         run: |
-          mkdir -p www
+          mkdir -p www assets
           cp blackjack.html www/index.html
+          cp icon.png assets/icon-only.png
 
       - name: Installer les dépendances
         run: npm install
 
       - name: Créer le projet Android
         run: npx cap add android
+
+      - name: Générer les icônes
+        run: npx --yes @capacitor/assets generate --android --iconBackgroundColor '#0f3d2a' --iconBackgroundColorDark '#0f3d2a'
 
       - name: Synchroniser le jeu
         run: npx cap sync android
