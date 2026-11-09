@@ -24,7 +24,7 @@ jobs:
         run: |
           mkdir -p www/games www/shared assets
           cp index.html www/
-          cp games/*.html www/games/
+          cp -r games/. www/games/
           cp shared/*.js www/shared/
           cp icon.png assets/icon-only.png
           echo "www/ prêt :"; find www -type f | sort

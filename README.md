@@ -8,6 +8,8 @@ Launcher de jeux tout-en-un pour Android (Capacitor) — accueil, menu, options,
 | --- | --- | --- |
 | Blackjack | `games/blackjack.html` | 6 sabots, 3:2, croupier à 16, double, split, assurance |
 | Dames | `games/dames.html` | 8×8, prise obligatoire, rafle majoritaire, dames volantes, IA 3 niveaux |
+| Puzzle | `games/puzzle.html` | Casse-tête à tuiles glissantes : 3 images, tailles 3×3 à 5×5, chronomètre |
+| Tetris | `games/tetris.html` | 7 formes, fantôme d'atterrissage, niveaux progressifs, pavé tactile |
 
 ## Architecture
 

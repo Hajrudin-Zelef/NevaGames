@@ -43,8 +43,6 @@
       write(SETTINGS_KEY, s);
       return s;
     },
-
-    /* ---------- records ---------- */
     records: function () {
       return read(RECORDS_KEY, {});
     },
@@ -67,6 +65,16 @@
       var all = NG.records();
       var g = all[gameId] || {};
       g[key] = isNum(g[key]) ? Math.max(g[key], value) : value;
+      all[gameId] = g;
+      write(RECORDS_KEY, all);
+      return g;
+    },
+    /* conserve le minimum (meilleur temps, moins de coups, ...) */
+    min: function (gameId, key, value) {
+      if (!isNum(value)) return NG.get(gameId);
+      var all = NG.records();
+      var g = all[gameId] || {};
+      g[key] = isNum(g[key]) ? Math.min(g[key], value) : value;
       all[gameId] = g;
       write(RECORDS_KEY, all);
       return g;

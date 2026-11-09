@@ -337,7 +337,7 @@
           <button class="btn btn-danger btn-sm" type="button" id="resetAll">Effacer</button>
         </div>
       </div>
-      <p class="opt-foot" id="optFoot">NevaGames · v<span id="ver">1.1.0</span> — les réglages et records sont enregistrés localement sur cet appareil.</p>
+      <p class="opt-foot" id="optFoot">NevaGames · v<span id="ver">1.2.0</span> — les réglages et records sont enregistrés localement sur cet appareil.</p>
     </section>
 
     <!-- JEU -->
@@ -393,10 +393,40 @@
       ],
       status: "ready"
     },
+    {
+      id: "puzzle",
+      file: "games/puzzle.html",
+      title: "Puzzle",
+      icon: "🖼️",
+      desc: "3 images, 3 tailles (3×3 à 5×5) — remettez chaque tuile à sa place.",
+      highlight: "meilleurTemps",
+      stats: [
+        { k: "meilleurTemps", label: "Meilleur temps", fmt: "dur" },
+        { k: "moinsDeCoups", label: "Moins de coups", fmt: "int" },
+        { k: "victoires", label: "Puzzles résolus", fmt: "int" },
+        { k: "parties", label: "Parties jouées", fmt: "int" }
+      ],
+      status: "ready"
+    },
+    {
+      id: "tetris",
+      file: "games/tetris.html",
+      title: "Tetris",
+      icon: "🧱",
+      desc: "7 formes, fantôme d'atterrissage, niveaux progressifs. Flèches ou pavé tactile.",
+      highlight: "scoreMax",
+      stats: [
+        { k: "scoreMax", label: "Meilleur score", fmt: "int" },
+        { k: "lignes", label: "Lignes totales", fmt: "int" },
+        { k: "niveaux", label: "Niveau maximum", fmt: "int" },
+        { k: "parties", label: "Parties jouées", fmt: "int" }
+      ],
+      status: "ready"
+    },
     { id: "prochain", status: "soon", title: "Prochain jeu", icon: "🔒", desc: "Un nouveau titre arrive ici." }
   ];
 
-  var VERSION = "1.1.0";
+  var VERSION = "1.2.0";
 
   /* ---------- utilitaires ---------- */
   var $ = function (s) { return document.querySelector(s); };
@@ -405,6 +435,10 @@
     if (v === undefined || v === null || v === "") return null;
     if (typeof v !== "number") return String(v);
     if (fmt === "eur") return v.toLocaleString("fr-FR") + " €";
+    if (fmt === "dur") {
+      var m = Math.floor(v / 60), s = v % 60;
+      return m + ":" + String(s).padStart(2, "0");
+    }
     return v.toLocaleString("fr-FR");
   }
 
